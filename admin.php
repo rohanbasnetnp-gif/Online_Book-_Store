@@ -63,7 +63,7 @@ $user_result = $conn->query($user_query);
 $users = $user_result->fetch_all(MYSQLI_ASSOC);
 
 // Get all orders
-$order_query = "SELECT o.id, o.name, o.email, o.phone, o.address, o.total, o.order_date, o.status, u.name as user_name FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.id DESC";
+$order_query = "SELECT o.id, o.name, o.email, o.phone, o.address, o.total, o.order_date, o.status, IFNULL(o.payment_status, 'pending') as payment_status, IFNULL(o.payment_method, 'cod') as payment_method, u.name as user_name FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.id DESC";
 $order_result = $conn->query($order_query);
 $orders = $order_result ? $order_result->fetch_all(MYSQLI_ASSOC) : [];
 ?>
@@ -408,9 +408,9 @@ $orders = $order_result ? $order_result->fetch_all(MYSQLI_ASSOC) : [];
                             <th>Customer</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Address</th>
                             <th>Total</th>
                             <th>Date</th>
+                            <th>Payment</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -422,9 +422,15 @@ $orders = $order_result ? $order_result->fetch_all(MYSQLI_ASSOC) : [];
                             <td><?php echo htmlspecialchars($order['name']); ?></td>
                             <td><?php echo htmlspecialchars($order['email']); ?></td>
                             <td><?php echo htmlspecialchars($order['phone']); ?></td>
-                            <td><?php echo htmlspecialchars($order['address']); ?></td>
                             <td>NPR <?php echo number_format($order['total'], 0); ?></td>
                             <td><?php echo $order['order_date']; ?></td>
+                            <td>
+                                <?php if (($order['payment_status'] ?? 'pending') == 'completed'): ?>
+                                    <span style="color: green;">✓ Paid (<?php echo htmlspecialchars(ucfirst($order['payment_method'] ?? 'Online')); ?>)</span>
+                                <?php else: ?>
+                                    <span style="color: orange;">⏳ COD</span>
+                                <?php endif; ?>
+                            </td>
                             <td><?php echo htmlspecialchars($order['status']); ?></td>
                             <td class="book-actions">
                                 <a href="view_order.php?id=<?php echo $order['id']; ?>" class="btn btn-secondary">View Details</a>

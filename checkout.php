@@ -45,9 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($name) || empty($email) || empty($address) || empty($phone)) {
         $error = "All fields are required.";
     } else {
-        // Insert order
-        $stmt = $conn->prepare("INSERT INTO orders (user_id, name, email, phone, address, total) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("issssd", $user_id, $name, $email, $phone, $address, $total);
+        // Insert order with pending payment status
+        $payment_status = 'pending';
+        $stmt = $conn->prepare("INSERT INTO orders (user_id, name, email, phone, address, total, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("issssds", $user_id, $name, $email, $phone, $address, $total, $payment_status);
         $stmt->execute();
         $order_id = $stmt->insert_id;
         $stmt->close();
@@ -60,14 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->close();
         }
 
-        // Clear cart
-        $delete_query = "DELETE FROM cart WHERE user_id = ?";
-        $stmt = $conn->prepare($delete_query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $stmt->close();
-
-        header("Location: checkout_success.php");
+        // Store pending order info in session and redirect to payment
+        $_SESSION['pending_order_id'] = $order_id;
+        $_SESSION['pending_total'] = $total;
+        
+        header("Location: payment.php");
         exit();
     }
 }

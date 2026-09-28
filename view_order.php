@@ -297,6 +297,20 @@ $stmt->close();
                     <p><strong>Total:</strong> NPR <?php echo number_format($order['total'], 0); ?></p>
                     <p><strong>User:</strong> <?php echo htmlspecialchars($order['user_name']); ?></p>
                 </div>
+                <div class="info-group">
+                    <h3>Payment Information</h3>
+                    <p><strong>Payment Status:</strong> 
+                        <?php if (($order['payment_status'] ?? 'pending') == 'completed'): ?>
+                            <span style="color: green;">✓ Paid</span>
+                        <?php else: ?>
+                            <span style="color: orange;">⏳ Pending</span>
+                        <?php endif; ?>
+                    </p>
+                    <p><strong>Payment Method:</strong> <?php echo htmlspecialchars(ucfirst($order['payment_method'] ?? 'N/A')); ?></p>
+                    <?php if (!empty($order['transaction_id'])): ?>
+                        <p><strong>Transaction ID:</strong> <code><?php echo htmlspecialchars($order['transaction_id']); ?></code></p>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="order-items">
